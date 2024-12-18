@@ -1,0 +1,47 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: dbpass
+      POSTGRES_DB: dbname
+    volumes:
+      - /var/lib/postgresql/data
+    networks:
+      - dbnetwork
+
+networks:
+  dbnetwork:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.1.0.0/16
+
+volumes:
+  pgdata:
+    driver: local
+    driver_opts:
+      type: none
+    name: pgdata
+    label:
+      - app=postgres
+
+hostname: localhost
+ports:
+  - "5432:5432"
+
+command:
+  - "/bin/bash"
+  - "-c"
+  - "psql -U $POSTGRES_USER -W -h localhost -d $POSTGRES_DB -p $POSTGRES_PASSWORD"
+
+working_dir: /docker-entrypoint.sh
+
+restart: always
+
+build:
+  context: .
+  dockerfile: ./Dockerfile
